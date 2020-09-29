@@ -1,0 +1,13 @@
+FROM adamrehn/ue4-full:4.23.1-pixelstreaming AS builder
+
+RUN git clone --progress --depth 1 https://github.com/ufna/VaOceanMobile.git /tmp/project
+
+WORKDIR /tmp/project
+RUN ue4 package
+
+FROM adamrehn/ue4-runtime:latest
+COPY --from=builder --chown=ue4:ue4 /tmp/project/dist/LinuxNoEditor /home/ue4/project
+
+ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},video
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libnvidia-encode.so.1 /home/ue4/project/ProjectName/Binaries/Linux/libnvidia-encode.so.1

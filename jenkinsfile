@@ -1,0 +1,36 @@
+pipeline { 
+    environment { 
+        registry = "ssinghfacebook/fbrl-interview" 
+        registryCredential = 'ssinghfacebook' 
+        dockerImage = '' 
+    }   
+	agent any 
+    stages { 
+        stage('Clone') { 
+            steps { 
+                git 'https://github.com/ssingh-facebook/fb-realitylabs-interview.git' 
+            }
+        } 
+        stage('Build') { 
+            steps { 
+                script { 
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER" 
+                }
+            } 
+        }
+        stage('Deploy') { 
+            steps { 
+                script { 
+                    docker.withRegistry( '', registryCredential ) { 
+                        dockerImage.push() 
+                    }
+                } 
+            }
+        } 
+        stage('Clean') { 
+            steps { 
+                sh "docker rmi $registry:$BUILD_NUMBER" 
+            }
+        } 
+    }
+}
